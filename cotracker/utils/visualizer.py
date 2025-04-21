@@ -8,6 +8,7 @@ import os
 import numpy as np
 import imageio
 import torch
+import cv2
 
 from matplotlib import cm
 import torch.nn.functional as F
@@ -27,6 +28,30 @@ def read_video_from_path(path):
         frames.append(np.array(im))
     return np.stack(frames)
 
+def read_frames_from_folder(folder_path):
+    try:
+        # Get a sorted list of all .jpg files in the folder
+        frame_files = sorted([f for f in os.listdir(folder_path) if f.endswith('.jpg')])
+    except Exception as e:
+        print("Error reading frame files from folder: ", e)
+        return None
+
+    frames = []
+    for frame_file in frame_files:
+        frame_path = os.path.join(folder_path, frame_file)
+        frame = cv2.imread(frame_path)
+        if frame is None:
+            print(f"Error reading frame: {frame_path}")
+            continue
+
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(frame)
+
+    if not frames:
+        print("No frames were loaded.")
+        return None
+
+    return np.stack(frames)
 
 def draw_circle(rgb, coord, radius, color=(255, 0, 0), visible=True, color_alpha=None):
     # Create a draw object
